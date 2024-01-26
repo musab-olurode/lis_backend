@@ -1,6 +1,6 @@
 module github.com/musab-olurode/lis_backend
 
-go 1.21.6
+go 1.21.4
 
 require (
 	github.com/go-chi/chi v1.5.5
