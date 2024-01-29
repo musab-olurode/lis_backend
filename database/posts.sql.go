@@ -83,7 +83,7 @@ func (q *Queries) GetPaginatedPosts(ctx context.Context, arg GetPaginatedPostsPa
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Post
+	items := []Post{}
 	for rows.Next() {
 		var i Post
 		if err := rows.Scan(

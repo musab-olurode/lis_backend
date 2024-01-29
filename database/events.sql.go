@@ -110,7 +110,7 @@ func (q *Queries) GetPaginatedEvents(ctx context.Context, arg GetPaginatedEvents
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Event
+	items := []Event{}
 	for rows.Next() {
 		var i Event
 		if err := rows.Scan(

@@ -97,7 +97,7 @@ func (q *Queries) GetPaginatedMaterials(ctx context.Context, arg GetPaginatedMat
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Material
+	items := []Material{}
 	for rows.Next() {
 		var i Material
 		if err := rows.Scan(
