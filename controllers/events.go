@@ -12,16 +12,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/musab-olurode/lis_backend/constants"
 	"github.com/musab-olurode/lis_backend/database"
+	"github.com/musab-olurode/lis_backend/database/models"
 	"github.com/musab-olurode/lis_backend/utils"
 )
 
 func CreateEvent(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Title       string         `json:"title"`
-		Description sql.NullString `json:"description"`
-		ImageUrl    string         `json:"image_url"`
-		Venue       string         `json:"venue"`
-		Date        time.Time      `json:"date"`
+		Title       string    `json:"title"`
+		Description string    `json:"description"`
+		ImageUrl    string    `json:"image_url"`
+		Venue       string    `json:"venue"`
+		Date        time.Time `json:"date"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -31,10 +32,15 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	description := sql.NullString{
+		String: params.Description,
+		Valid:  params.Description != "",
+	}
+
 	event, err := database.DB.CreateEvent(r.Context(), database.CreateEventParams{
 		ID:          uuid.New(),
 		Title:       params.Title,
-		Description: params.Description,
+		Description: description,
 		ImageUrl:    params.ImageUrl,
 		Venue:       params.Venue,
 		Date:        params.Date,
@@ -46,7 +52,7 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusCreated, event)
+	utils.RespondWithJSON(w, http.StatusCreated, models.DatabaseEventToEvent(event))
 }
 
 func GetEvents(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +83,14 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondWithPaginatedData(w, events, int32(eventsCount), int32(currentPage), int32(perPage), "events retrieved successfully")
+	utils.RespondWithPaginatedData(
+		w,
+		models.DatabaseEventsToEvents(events),
+		int32(eventsCount),
+		int32(currentPage),
+		int32(perPage),
+		"events retrieved successfully",
+	)
 }
 
 func GetEvent(w http.ResponseWriter, r *http.Request) {
@@ -94,16 +107,21 @@ func GetEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, event, "event retrieved successfully")
+	utils.RespondWithJSON(
+		w,
+		http.StatusOK,
+		models.DatabaseEventToEvent(event),
+		"event retrieved successfully",
+	)
 }
 
 func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Title       string         `json:"title"`
-		Description sql.NullString `json:"description"`
-		ImageUrl    string         `json:"image_url"`
-		Venue       string         `json:"venue"`
-		Date        time.Time      `json:"date"`
+		Title       string    `json:"title"`
+		Description string    `json:"description"`
+		ImageUrl    string    `json:"image_url"`
+		Venue       string    `json:"venue"`
+		Date        time.Time `json:"date"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -120,10 +138,15 @@ func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	description := sql.NullString{
+		String: params.Description,
+		Valid:  params.Description != "",
+	}
+
 	event, err := database.DB.UpdateEvent(r.Context(), database.UpdateEventParams{
 		ID:          eventID,
 		Title:       params.Title,
-		Description: params.Description,
+		Description: description,
 		ImageUrl:    params.ImageUrl,
 		Venue:       params.Venue,
 		Date:        params.Date,
@@ -134,7 +157,7 @@ func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, event, "event updated successfully")
+	utils.RespondWithJSON(w, http.StatusOK, models.DatabaseEventToEvent(event), "event updated successfully")
 }
 
 func DeleteEvent(w http.ResponseWriter, r *http.Request) {
