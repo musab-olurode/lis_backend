@@ -24,6 +24,17 @@ func (q *Queries) CountEvents(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countUpcomingEvents = `-- name: CountUpcomingEvents :one
+SELECT COUNT(*) FROM events WHERE date >= NOW()
+`
+
+func (q *Queries) CountUpcomingEvents(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUpcomingEvents)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createEvent = `-- name: CreateEvent :one
 INSERT INTO events (id, title, description, image_url, venue, date, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -106,6 +117,47 @@ type GetPaginatedEventsParams struct {
 
 func (q *Queries) GetPaginatedEvents(ctx context.Context, arg GetPaginatedEventsParams) ([]Event, error) {
 	rows, err := q.db.QueryContext(ctx, getPaginatedEvents, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Event{}
+	for rows.Next() {
+		var i Event
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.ImageUrl,
+			&i.Venue,
+			&i.Date,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUpcomingEventsPaginated = `-- name: GetUpcomingEventsPaginated :many
+SELECT id, title, description, image_url, venue, date, created_at, updated_at FROM events WHERE date >= NOW() ORDER BY date ASC LIMIT $1 OFFSET $2
+`
+
+type GetUpcomingEventsPaginatedParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetUpcomingEventsPaginated(ctx context.Context, arg GetUpcomingEventsPaginatedParams) ([]Event, error) {
+	rows, err := q.db.QueryContext(ctx, getUpcomingEventsPaginated, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

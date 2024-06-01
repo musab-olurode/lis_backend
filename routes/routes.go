@@ -21,6 +21,7 @@ func ConfigureRouter() *chi.Mux {
 	router.Get("/materials/{materialID}", controllers.GetMaterial)
 
 	router.Get("/events", controllers.GetEvents)
+	router.Get("/events/upcoming", controllers.GetUpcomingEvents)
 	router.Get("/events/{eventID}", controllers.GetEvent)
 
 	// authenticated routes

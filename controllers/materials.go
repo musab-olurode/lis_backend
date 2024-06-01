@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -84,6 +85,11 @@ func GetMaterial(w http.ResponseWriter, r *http.Request) {
 
 	material, err := database.DB.GetMaterialByID(r.Context(), materialID)
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			utils.RespondWithErr(w, http.StatusNotFound, fmt.Sprintf("material with id %s not found", materialIDString))
+			return
+		}
+
 		utils.RespondWithInternalServerError(w, err)
 		return
 	}
@@ -119,6 +125,11 @@ func UpdateMaterial(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt: time.Now().UTC(),
 	})
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			utils.RespondWithErr(w, http.StatusNotFound, fmt.Sprintf("material with id %s not found", materialIDString))
+			return
+		}
+
 		utils.RespondWithInternalServerError(w, err)
 		return
 	}
@@ -136,6 +147,11 @@ func DeleteMaterial(w http.ResponseWriter, r *http.Request) {
 
 	err = database.DB.DeleteMaterial(r.Context(), materialID)
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			utils.RespondWithErr(w, http.StatusNotFound, fmt.Sprintf("material with id %s not found", materialIDString))
+			return
+		}
+
 		utils.RespondWithInternalServerError(w, err)
 		return
 	}
