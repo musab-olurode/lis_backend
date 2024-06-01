@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -85,6 +86,11 @@ func GetPost(w http.ResponseWriter, r *http.Request) {
 
 	post, err := database.DB.GetPostByID(r.Context(), postID)
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			utils.RespondWithErr(w, http.StatusNotFound, fmt.Sprintf("post with id %s not found", postIDString))
+			return
+		}
+
 		utils.RespondWithInternalServerError(w, err)
 		return
 	}
@@ -121,6 +127,11 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt:   time.Now().UTC(),
 	})
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			utils.RespondWithErr(w, http.StatusNotFound, fmt.Sprintf("post with id %s not found", postIDString))
+			return
+		}
+
 		utils.RespondWithInternalServerError(w, err)
 		return
 	}
@@ -138,6 +149,11 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 
 	err = database.DB.DeletePost(r.Context(), postID)
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows") {
+			utils.RespondWithErr(w, http.StatusNotFound, fmt.Sprintf("post with id %s not found", postIDString))
+			return
+		}
+
 		utils.RespondWithInternalServerError(w, err)
 		return
 	}

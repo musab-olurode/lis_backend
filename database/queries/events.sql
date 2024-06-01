@@ -18,3 +18,9 @@ WHERE id = $1 RETURNING *;
 
 -- name: DeleteEvent :exec
 DELETE FROM events WHERE id = $1;
+
+-- name: CountUpcomingEvents :one
+SELECT COUNT(*) FROM events WHERE date >= NOW();
+
+-- name: GetUpcomingEventsPaginated :many
+SELECT * FROM events WHERE date >= NOW() ORDER BY date ASC LIMIT $1 OFFSET $2;

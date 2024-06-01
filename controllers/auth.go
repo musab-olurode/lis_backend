@@ -35,6 +35,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	params.MatricNumber = strings.ToUpper(params.MatricNumber)
+
 	userExists := true
 	_, err = database.DB.GetUserByMatricNumber(r.Context(), params.MatricNumber)
 	if err != nil {
@@ -103,6 +105,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithErr(w, http.StatusBadRequest, fmt.Sprintf("invalid request payload: %v", err))
 		return
 	}
+
+	params.MatricNumber = strings.ToUpper(params.MatricNumber)
 
 	user, err := database.DB.GetUserByMatricNumber(r.Context(), params.MatricNumber)
 	if err != nil {

@@ -24,6 +24,7 @@ func DatabaseEventToEvent(event database.Event) Event {
 		ID:          event.ID,
 		Title:       event.Title,
 		ImageUrl:    event.ImageUrl,
+		Venue:       event.Venue,
 		Description: nullStringToStringPtr(event.Description),
 		CreatedAt:   event.CreatedAt,
 		Date:        event.Date,
