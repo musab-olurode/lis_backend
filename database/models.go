@@ -75,12 +75,14 @@ type Material struct {
 }
 
 type Post struct {
-	ID          uuid.UUID `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	ImageUrl    string    `json:"image_url"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID            uuid.UUID      `json:"id"`
+	Title         string         `json:"title"`
+	Content       string         `json:"content"`
+	CoverImageUrl string         `json:"cover_image_url"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	Description   sql.NullString `json:"description"`
+	Slug          string         `json:"slug"`
 }
 
 type User struct {

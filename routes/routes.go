@@ -16,6 +16,7 @@ func ConfigureRouter() *chi.Mux {
 
 	router.Get("/posts", controllers.GetPosts)
 	router.Get("/posts/{postID}", controllers.GetPost)
+	router.Get("/posts/slug/{postSlug}", controllers.GetPostBySlug)
 
 	router.Get("/materials", controllers.GetMaterials)
 	router.Get("/materials/{materialID}", controllers.GetMaterial)
@@ -29,6 +30,8 @@ func ConfigureRouter() *chi.Mux {
 		router.Use(middlewares.Authenticated)
 
 		router.Get("/auth/me", controllers.GetLoggedInUser)
+		router.Post("/upload", controllers.UploadFile)
+		router.Delete("/upload", controllers.DeleteFile)
 	})
 
 	// admin routes

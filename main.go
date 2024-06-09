@@ -23,6 +23,7 @@ func main() {
 	}
 
 	database.ConfigureDB()
+	utils.ConfigureCloudinary()
 
 	router := chi.NewRouter()
 	router.Use(cors.Handler(cors.Options{

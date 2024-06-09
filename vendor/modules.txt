@@ -1,3 +1,19 @@
+# github.com/cloudinary/cloudinary-go/v2 v2.7.0
+## explicit; go 1.15
+github.com/cloudinary/cloudinary-go/v2
+github.com/cloudinary/cloudinary-go/v2/api
+github.com/cloudinary/cloudinary-go/v2/api/admin
+github.com/cloudinary/cloudinary-go/v2/api/admin/metadata
+github.com/cloudinary/cloudinary-go/v2/api/admin/search
+github.com/cloudinary/cloudinary-go/v2/api/uploader
+github.com/cloudinary/cloudinary-go/v2/asset
+github.com/cloudinary/cloudinary-go/v2/config
+github.com/cloudinary/cloudinary-go/v2/internal/signature
+github.com/cloudinary/cloudinary-go/v2/logger
+github.com/cloudinary/cloudinary-go/v2/transformation
+# github.com/creasty/defaults v1.5.1
+## explicit; go 1.13
+github.com/creasty/defaults
 # github.com/go-chi/chi v1.5.5
 ## explicit; go 1.16
 github.com/go-chi/chi
@@ -10,6 +26,9 @@ github.com/golang-jwt/jwt/v4
 # github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
+# github.com/gorilla/schema v1.2.0
+## explicit
+github.com/gorilla/schema
 # github.com/joho/godotenv v1.5.1
 ## explicit; go 1.12
 github.com/joho/godotenv
@@ -18,7 +37,11 @@ github.com/joho/godotenv
 github.com/lib/pq
 github.com/lib/pq/oid
 github.com/lib/pq/scram
-# golang.org/x/crypto v0.18.0
+# golang.org/x/crypto v0.24.0
 ## explicit; go 1.18
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
+# golang.org/x/net v0.26.0
+## explicit; go 1.18
+golang.org/x/net/html
+golang.org/x/net/html/atom
