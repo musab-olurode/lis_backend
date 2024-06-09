@@ -41,7 +41,19 @@ func GenerateRandomString(length int) string {
 }
 
 func GetSlugFromTitle(title string) string {
-	return strings.ReplaceAll(title, " ", "-") + "-" + GenerateRandomString(6)
+	title = strings.ReplaceAll(title, " ", "-")
+	title = strings.ToLower(title)
+	title = strings.Map(func(r rune) rune {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '-' {
+			return r
+		}
+		return -1
+	}, title)
+	if len(title) > 50 {
+		title = title[:50]
+	}
+	title = title + "-" + GenerateRandomString(5)
+	return title
 }
 
 func GetBlogContentDescription(content string) string {
