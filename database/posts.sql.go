@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,26 +25,30 @@ func (q *Queries) CountPosts(ctx context.Context) (int64, error) {
 }
 
 const createPost = `-- name: CreatePost :one
-INSERT INTO posts (id, title, description, image_url, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, title, description, image_url, created_at, updated_at
+INSERT INTO posts (id, cover_image_url, title, slug, description, content, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, title, content, cover_image_url, created_at, updated_at, description, slug
 `
 
 type CreatePostParams struct {
-	ID          uuid.UUID `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	ImageUrl    string    `json:"image_url"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID            uuid.UUID      `json:"id"`
+	CoverImageUrl string         `json:"cover_image_url"`
+	Title         string         `json:"title"`
+	Slug          string         `json:"slug"`
+	Description   sql.NullString `json:"description"`
+	Content       string         `json:"content"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
 }
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
 	row := q.db.QueryRowContext(ctx, createPost,
 		arg.ID,
+		arg.CoverImageUrl,
 		arg.Title,
+		arg.Slug,
 		arg.Description,
-		arg.ImageUrl,
+		arg.Content,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -51,10 +56,12 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
-		&i.Description,
-		&i.ImageUrl,
+		&i.Content,
+		&i.CoverImageUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Description,
+		&i.Slug,
 	)
 	return i, err
 }
@@ -69,7 +76,7 @@ func (q *Queries) DeletePost(ctx context.Context, id uuid.UUID) error {
 }
 
 const getPaginatedPosts = `-- name: GetPaginatedPosts :many
-SELECT id, title, description, image_url, created_at, updated_at FROM posts ORDER BY created_at DESC LIMIT $1 OFFSET $2
+SELECT id, title, content, cover_image_url, created_at, updated_at, description, slug FROM posts ORDER BY created_at DESC LIMIT $1 OFFSET $2
 `
 
 type GetPaginatedPostsParams struct {
@@ -89,10 +96,12 @@ func (q *Queries) GetPaginatedPosts(ctx context.Context, arg GetPaginatedPostsPa
 		if err := rows.Scan(
 			&i.ID,
 			&i.Title,
-			&i.Description,
-			&i.ImageUrl,
+			&i.Content,
+			&i.CoverImageUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Description,
+			&i.Slug,
 		); err != nil {
 			return nil, err
 		}
@@ -108,7 +117,7 @@ func (q *Queries) GetPaginatedPosts(ctx context.Context, arg GetPaginatedPostsPa
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT id, title, description, image_url, created_at, updated_at FROM posts WHERE id = $1
+SELECT id, title, content, cover_image_url, created_at, updated_at, description, slug FROM posts WHERE id = $1
 `
 
 func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error) {
@@ -117,43 +126,71 @@ func (q *Queries) GetPostByID(ctx context.Context, id uuid.UUID) (Post, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
-		&i.Description,
-		&i.ImageUrl,
+		&i.Content,
+		&i.CoverImageUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Description,
+		&i.Slug,
+	)
+	return i, err
+}
+
+const getPostBySlug = `-- name: GetPostBySlug :one
+SELECT id, title, content, cover_image_url, created_at, updated_at, description, slug FROM posts WHERE slug = $1
+`
+
+func (q *Queries) GetPostBySlug(ctx context.Context, slug string) (Post, error) {
+	row := q.db.QueryRowContext(ctx, getPostBySlug, slug)
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Content,
+		&i.CoverImageUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Description,
+		&i.Slug,
 	)
 	return i, err
 }
 
 const updatePost = `-- name: UpdatePost :one
-UPDATE posts SET title = $2, description = $3, image_url = $4, updated_at = $5
-WHERE id = $1 RETURNING id, title, description, image_url, created_at, updated_at
+UPDATE posts SET cover_image_url = $2, title = $3, slug = $4, description = $5, content = $6, updated_at = $7
+WHERE id = $1 RETURNING id, title, content, cover_image_url, created_at, updated_at, description, slug
 `
 
 type UpdatePostParams struct {
-	ID          uuid.UUID `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	ImageUrl    string    `json:"image_url"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID            uuid.UUID      `json:"id"`
+	CoverImageUrl string         `json:"cover_image_url"`
+	Title         string         `json:"title"`
+	Slug          string         `json:"slug"`
+	Description   sql.NullString `json:"description"`
+	Content       string         `json:"content"`
+	UpdatedAt     time.Time      `json:"updated_at"`
 }
 
 func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, error) {
 	row := q.db.QueryRowContext(ctx, updatePost,
 		arg.ID,
+		arg.CoverImageUrl,
 		arg.Title,
+		arg.Slug,
 		arg.Description,
-		arg.ImageUrl,
+		arg.Content,
 		arg.UpdatedAt,
 	)
 	var i Post
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
-		&i.Description,
-		&i.ImageUrl,
+		&i.Content,
+		&i.CoverImageUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Description,
+		&i.Slug,
 	)
 	return i, err
 }
