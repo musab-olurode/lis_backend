@@ -19,10 +19,11 @@ import (
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Title         string `json:"title"`
-		Description   string `json:"description"`
-		Content       string `json:"content"`
-		CoverImageUrl string `json:"cover_image_url"`
+		Title         string    `json:"title"`
+		Description   string    `json:"description"`
+		Content       string    `json:"content"`
+		CoverImageUrl string    `json:"cover_image_url"`
+		Date          time.Time `json:"date"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -50,7 +51,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		Slug:          slug,
 		Description:   description,
 		Content:       params.Content,
-		CreatedAt:     time.Now().UTC(),
+		CreatedAt:     params.Date,
 		UpdatedAt:     time.Now().UTC(),
 	})
 	if err != nil {
@@ -133,10 +134,11 @@ func GetPostBySlug(w http.ResponseWriter, r *http.Request) {
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
-		Title         string `json:"title"`
-		Description   string `json:"description"`
-		Content       string `json:"content"`
-		CoverImageUrl string `json:"cover_image_url"`
+		Title         string    `json:"title"`
+		Description   string    `json:"description"`
+		Content       string    `json:"content"`
+		CoverImageUrl string    `json:"cover_image_url"`
+		Date          time.Time `json:"date"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -196,6 +198,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 		CoverImageUrl: coverImageUrl,
 		Description:   description,
 		Content:       params.Content,
+		CreatedAt:     params.Date,
 		UpdatedAt:     time.Now().UTC(),
 	})
 	if err != nil {

@@ -16,7 +16,7 @@ SELECT * FROM posts ORDER BY created_at DESC LIMIT $1 OFFSET $2;
 SELECT COUNT(*) FROM posts;
 
 -- name: UpdatePost :one
-UPDATE posts SET cover_image_url = $2, title = $3, slug = $4, description = $5, content = $6, updated_at = $7
+UPDATE posts SET cover_image_url = $2, title = $3, slug = $4, description = $5, content = $6, created_at = $7, updated_at = $8
 WHERE id = $1 RETURNING *;
 
 -- name: DeletePost :exec

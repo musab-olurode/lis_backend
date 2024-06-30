@@ -13,6 +13,54 @@ import (
 	"github.com/google/uuid"
 )
 
+type Category string
+
+const (
+	Category100Level       Category = "100 Level"
+	Category200Level       Category = "200 Level"
+	Category300Level       Category = "300 Level"
+	Category400Level       Category = "400 Level"
+	Category500Level       Category = "500 Level"
+	CategoryLawLiteratures Category = "Law Literatures"
+	CategoryOurJournals    Category = "Our Journals"
+	CategoryArticles       Category = "Articles"
+)
+
+func (e *Category) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Category(s)
+	case string:
+		*e = Category(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Category: %T", src)
+	}
+	return nil
+}
+
+type NullCategory struct {
+	Category Category `json:"category"`
+	Valid    bool     `json:"valid"` // Valid is true if Category is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCategory) Scan(value interface{}) error {
+	if value == nil {
+		ns.Category, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Category.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCategory) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Category), nil
+}
+
 type UserRole string
 
 const (
@@ -72,6 +120,7 @@ type Material struct {
 	FileUrl   string    `json:"file_url"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	Category  Category  `json:"category"`
 }
 
 type Post struct {
