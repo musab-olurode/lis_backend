@@ -157,7 +157,7 @@ func (q *Queries) GetPostBySlug(ctx context.Context, slug string) (Post, error) 
 }
 
 const updatePost = `-- name: UpdatePost :one
-UPDATE posts SET cover_image_url = $2, title = $3, slug = $4, description = $5, content = $6, updated_at = $7
+UPDATE posts SET cover_image_url = $2, title = $3, slug = $4, description = $5, content = $6, created_at = $7, updated_at = $8
 WHERE id = $1 RETURNING id, title, content, cover_image_url, created_at, updated_at, description, slug
 `
 
@@ -168,6 +168,7 @@ type UpdatePostParams struct {
 	Slug          string         `json:"slug"`
 	Description   sql.NullString `json:"description"`
 	Content       string         `json:"content"`
+	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
 }
 
@@ -179,6 +180,7 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 		arg.Slug,
 		arg.Description,
 		arg.Content,
+		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
 	var i Post

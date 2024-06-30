@@ -23,16 +23,28 @@ func (q *Queries) CountMaterials(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countMaterialsByCategory = `-- name: CountMaterialsByCategory :one
+SELECT COUNT(*) FROM materials WHERE category = $1
+`
+
+func (q *Queries) CountMaterialsByCategory(ctx context.Context, category Category) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countMaterialsByCategory, category)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createMaterial = `-- name: CreateMaterial :one
-INSERT INTO materials (id, title, file_url, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, title, file_url, created_at, updated_at
+INSERT INTO materials (id, title, file_url, category, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, title, file_url, created_at, updated_at, category
 `
 
 type CreateMaterialParams struct {
 	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"title"`
 	FileUrl   string    `json:"file_url"`
+	Category  Category  `json:"category"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -42,6 +54,7 @@ func (q *Queries) CreateMaterial(ctx context.Context, arg CreateMaterialParams) 
 		arg.ID,
 		arg.Title,
 		arg.FileUrl,
+		arg.Category,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -52,6 +65,7 @@ func (q *Queries) CreateMaterial(ctx context.Context, arg CreateMaterialParams) 
 		&i.FileUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Category,
 	)
 	return i, err
 }
@@ -66,7 +80,7 @@ func (q *Queries) DeleteMaterial(ctx context.Context, id uuid.UUID) error {
 }
 
 const getMaterialByID = `-- name: GetMaterialByID :one
-SELECT id, title, file_url, created_at, updated_at FROM materials WHERE id = $1
+SELECT id, title, file_url, created_at, updated_at, category FROM materials WHERE id = $1
 `
 
 func (q *Queries) GetMaterialByID(ctx context.Context, id uuid.UUID) (Material, error) {
@@ -78,12 +92,13 @@ func (q *Queries) GetMaterialByID(ctx context.Context, id uuid.UUID) (Material, 
 		&i.FileUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Category,
 	)
 	return i, err
 }
 
 const getPaginatedMaterials = `-- name: GetPaginatedMaterials :many
-SELECT id, title, file_url, created_at, updated_at FROM materials ORDER BY created_at DESC LIMIT $1 OFFSET $2
+SELECT id, title, file_url, created_at, updated_at, category FROM materials ORDER BY created_at DESC LIMIT $1 OFFSET $2
 `
 
 type GetPaginatedMaterialsParams struct {
@@ -106,6 +121,47 @@ func (q *Queries) GetPaginatedMaterials(ctx context.Context, arg GetPaginatedMat
 			&i.FileUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Category,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPaginatedMaterialsByCategory = `-- name: GetPaginatedMaterialsByCategory :many
+SELECT id, title, file_url, created_at, updated_at, category FROM materials WHERE category = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
+`
+
+type GetPaginatedMaterialsByCategoryParams struct {
+	Category Category `json:"category"`
+	Limit    int32    `json:"limit"`
+	Offset   int32    `json:"offset"`
+}
+
+func (q *Queries) GetPaginatedMaterialsByCategory(ctx context.Context, arg GetPaginatedMaterialsByCategoryParams) ([]Material, error) {
+	rows, err := q.db.QueryContext(ctx, getPaginatedMaterialsByCategory, arg.Category, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Material{}
+	for rows.Next() {
+		var i Material
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.FileUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -121,14 +177,15 @@ func (q *Queries) GetPaginatedMaterials(ctx context.Context, arg GetPaginatedMat
 }
 
 const updateMaterial = `-- name: UpdateMaterial :one
-UPDATE materials SET title = $2, file_url = $3, updated_at = $4
-WHERE id = $1 RETURNING id, title, file_url, created_at, updated_at
+UPDATE materials SET title = $2, file_url = $3, category = $4, updated_at = $5
+WHERE id = $1 RETURNING id, title, file_url, created_at, updated_at, category
 `
 
 type UpdateMaterialParams struct {
 	ID        uuid.UUID `json:"id"`
 	Title     string    `json:"title"`
 	FileUrl   string    `json:"file_url"`
+	Category  Category  `json:"category"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
@@ -137,6 +194,7 @@ func (q *Queries) UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) 
 		arg.ID,
 		arg.Title,
 		arg.FileUrl,
+		arg.Category,
 		arg.UpdatedAt,
 	)
 	var i Material
@@ -146,6 +204,7 @@ func (q *Queries) UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) 
 		&i.FileUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Category,
 	)
 	return i, err
 }

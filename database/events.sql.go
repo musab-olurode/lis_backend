@@ -189,7 +189,7 @@ func (q *Queries) GetUpcomingEventsPaginated(ctx context.Context, arg GetUpcomin
 }
 
 const updateEvent = `-- name: UpdateEvent :one
-UPDATE events SET title = $2, description = $3, image_url = $4, venue = $5, date = $6, updated_at = $7
+UPDATE events SET title = $2, description = $3, image_url = $4, venue = $5, created_at = $6, updated_at = $7
 WHERE id = $1 RETURNING id, title, description, image_url, venue, date, created_at, updated_at
 `
 
@@ -199,7 +199,7 @@ type UpdateEventParams struct {
 	Description sql.NullString `json:"description"`
 	ImageUrl    string         `json:"image_url"`
 	Venue       string         `json:"venue"`
-	Date        time.Time      `json:"date"`
+	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 }
 
@@ -210,7 +210,7 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Event
 		arg.Description,
 		arg.ImageUrl,
 		arg.Venue,
-		arg.Date,
+		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
 	var i Event
