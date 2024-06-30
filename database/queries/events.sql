@@ -7,13 +7,13 @@ RETURNING *;
 SELECT * FROM events WHERE id = $1;
 
 -- name: GetPaginatedEvents :many
-SELECT * FROM events ORDER BY created_at DESC LIMIT $1 OFFSET $2;
+SELECT * FROM events ORDER BY date DESC LIMIT $1 OFFSET $2;
 
 -- name: CountEvents :one
 SELECT COUNT(*) FROM events;
 
 -- name: UpdateEvent :one
-UPDATE events SET title = $2, description = $3, image_url = $4, venue = $5, created_at = $6, updated_at = $7
+UPDATE events SET title = $2, description = $3, image_url = $4, venue = $5, date = $6, updated_at = $7
 WHERE id = $1 RETURNING *;
 
 -- name: DeleteEvent :exec

@@ -44,7 +44,8 @@ func CreateEvent(w http.ResponseWriter, r *http.Request) {
 		Description: description,
 		ImageUrl:    params.ImageUrl,
 		Venue:       params.Venue,
-		CreatedAt:   params.Date,
+		Date:        params.Date,
+		CreatedAt:   time.Now().UTC(),
 		UpdatedAt:   time.Now().UTC(),
 	})
 	if err != nil {
@@ -154,7 +155,7 @@ func UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		Description: description,
 		ImageUrl:    params.ImageUrl,
 		Venue:       params.Venue,
-		CreatedAt:   params.Date,
+		Date:        params.Date,
 		UpdatedAt:   time.Now().UTC(),
 	})
 	if err != nil {
